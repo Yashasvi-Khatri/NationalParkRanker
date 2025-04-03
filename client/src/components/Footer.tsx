@@ -19,23 +19,23 @@ const Footer = () => {
             <h4 className="font-bold mb-4">Quick Links</h4>
             <ul className="space-y-2">
               <li>
-                <Link href="/">
-                  <a className="text-sm text-white/80 hover:text-white transition-colors">Home</a>
+                <Link href="/" className="text-sm text-white/80 hover:text-white transition-colors">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/rankings">
-                  <a className="text-sm text-white/80 hover:text-white transition-colors">Rankings</a>
+                <Link href="/rankings" className="text-sm text-white/80 hover:text-white transition-colors">
+                  Rankings
                 </Link>
               </li>
               <li>
-                <Link href="/history">
-                  <a className="text-sm text-white/80 hover:text-white transition-colors">Vote History</a>
+                <Link href="/history" className="text-sm text-white/80 hover:text-white transition-colors">
+                  Vote History
                 </Link>
               </li>
               <li>
-                <Link href="/about">
-                  <a className="text-sm text-white/80 hover:text-white transition-colors">About ELO System</a>
+                <Link href="/about" className="text-sm text-white/80 hover:text-white transition-colors">
+                  About ELO System
                 </Link>
               </li>
             </ul>

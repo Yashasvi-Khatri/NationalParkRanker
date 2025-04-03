@@ -3,6 +3,7 @@ import { useRankings } from "@/hooks/useRankings";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { Link } from "wouter";
 
 const RankingsSkeleton = () => {
   return (
@@ -111,9 +112,9 @@ const RankingsTable = ({ limit, showViewMore = true }: RankingsTableProps) => {
 
       {showViewMore && (
         <div className="mt-4 text-center">
-          <a href="/rankings" className="text-accent hover:text-accent/80 transition-colors font-medium flex items-center justify-center">
+          <Link href="/rankings" className="text-accent hover:text-accent/80 transition-colors font-medium flex items-center justify-center">
             View All Rankings <ArrowUp className="ml-1 h-4 w-4 rotate-90" />
-          </a>
+          </Link>
         </div>
       )}
     </section>
