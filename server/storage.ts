@@ -1,4 +1,6 @@
 import { Park, InsertPark, Vote, InsertVote, Matchup, InsertMatchup, VoteWithParks, MatchupWithParks } from "@shared/schema";
+import fs from 'fs';
+import path from 'path';
 
 export interface IStorage {
   // Parks
@@ -34,103 +36,75 @@ export class MemStorage implements IStorage {
     this.voteIdCounter = 1;
     this.matchupIdCounter = 1;
     
-    // Initialize with sample Indian national parks data
+    // Initialize with Indian national parks data from JSON file
     this.initializeParks();
     // Create initial matchup
     this.generateNewMatchup();
   }
   
   private initializeParks(): void {
+    try {
+      // Load parks from JSON file
+      const jsonPath = path.join(process.cwd(), 'server', 'data', 'parks.json');
+      const parksJson = fs.readFileSync(jsonPath, 'utf8');
+      const parksData = JSON.parse(parksJson);
+      
+      console.log(`Loaded ${parksData.length} parks from JSON file`);
+      
+      // Map JSON data to Park objects and add to storage
+      parksData.forEach((park: any) => {
+        // Convert park to our schema format
+        const newPark: Park = {
+          id: park.id,
+          name: park.name,
+          imageUrl: park.imageUrl,
+          location: park.location,
+          formed: park.formed || "",
+          notableFeatures: park.notableFeatures || "",
+          floraAndFauna: park.floraAndFauna || "",
+          rivers: "",  // Our JSON doesn't have rivers field
+          elo: park.elo || 1500,
+          wins: park.wins || 0,
+          losses: park.losses || 0,
+          draws: 0  // Our JSON doesn't have draws field
+        };
+        
+        this.parks.set(park.id, newPark);
+        
+        // Update counter to be higher than any existing id
+        if (park.id >= this.parkIdCounter) {
+          this.parkIdCounter = park.id + 1;
+        }
+      });
+      
+      console.log(`Initialized memory storage with ${this.parks.size} parks`);
+    } catch (error) {
+      console.error("Error loading parks from JSON:", error);
+      // Fallback to hardcoded parks if JSON loading fails
+      this.initializeFallbackParks();
+    }
+  }
+  
+  private initializeFallbackParks(): void {
+    console.log("Using fallback parks data");
     const parksData: InsertPark[] = [
       {
-        name: "Campbell Bay National Park",
-        imageUrl: "https://images.unsplash.com/photo-1588668214407-6ea9a6d8c272?w=600&h=400&fit=crop",
-        location: "Great Nicobar Island",
-        formed: "1992",
-        notableFeatures: "Part of Great Nicobar Biosphere Reserve",
-        floraAndFauna: "Crab-eating macaque, Nicobar treeshrew",
-        rivers: "Galathea River",
-      },
-      {
         name: "Jim Corbett National Park",
-        imageUrl: "https://images.unsplash.com/photo-1541720553099-fd70c0e31fcd?w=600&h=400&fit=crop",
+        imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Tiger_in_Corbett_National_Park.jpg/640px-Tiger_in_Corbett_National_Park.jpg",
         location: "Uttarakhand",
         formed: "1936",
-        notableFeatures: "Oldest national park in India",
+        notableFeatures: "Tigers, elephants, leopards",
         floraAndFauna: "Bengal tiger, Asian elephant, leopard",
         rivers: "Ramganga River",
       },
       {
-        name: "Kaziranga National Park",
-        imageUrl: "https://images.unsplash.com/photo-1591808216268-ce0b28e38fd5?w=600&h=400&fit=crop",
-        location: "Assam",
-        formed: "1974",
-        notableFeatures: "UNESCO World Heritage Site",
-        floraAndFauna: "One-horned rhinoceros, tiger, elephant",
-        rivers: "Brahmaputra River",
-      },
-      {
-        name: "Bandipur National Park",
-        imageUrl: "https://images.unsplash.com/photo-1585938389612-a552a28d6914?w=600&h=400&fit=crop",
-        location: "Karnataka",
-        formed: "1974",
-        notableFeatures: "Part of Nilgiri Biosphere Reserve",
-        floraAndFauna: "Indian elephant, gaur, tiger, sloth bear",
-        rivers: "Kabini River",
-      },
-      {
         name: "Ranthambore National Park",
-        imageUrl: "https://images.unsplash.com/photo-1602425795147-96a56c7884b1?w=600&h=400&fit=crop",
+        imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Ranthambhore_Tiger.jpg/640px-Ranthambhore_Tiger.jpg",
         location: "Rajasthan",
         formed: "1980",
-        notableFeatures: "Famous for tiger sightings",
+        notableFeatures: "Tigers, ancient ruins",
         floraAndFauna: "Bengal tiger, leopard, nilgai",
         rivers: "Chambal and Banas rivers",
-      },
-      {
-        name: "Kanha National Park",
-        imageUrl: "https://images.unsplash.com/photo-1575624238938-1261eecedc65?w=600&h=400&fit=crop",
-        location: "Madhya Pradesh",
-        formed: "1955",
-        notableFeatures: "Inspiration for Kipling's 'The Jungle Book'",
-        floraAndFauna: "Tiger, leopard, sloth bear, barasingha",
-        rivers: "Banjar River",
-      },
-      {
-        name: "Periyar National Park",
-        imageUrl: "https://images.unsplash.com/photo-1551918120-9739cb430c6d?w=600&h=400&fit=crop",
-        location: "Kerala",
-        formed: "1982",
-        notableFeatures: "Tiger reserve with artificial lake",
-        floraAndFauna: "Elephant, tiger, gaur, sambar deer",
-        rivers: "Periyar River",
-      },
-      {
-        name: "Sundarbans National Park",
-        imageUrl: "https://images.unsplash.com/photo-1600254528608-2f0bd6138e9b?w=600&h=400&fit=crop",
-        location: "West Bengal",
-        formed: "1984",
-        notableFeatures: "UNESCO World Heritage Site, largest mangrove forest",
-        floraAndFauna: "Royal Bengal tiger, saltwater crocodile",
-        rivers: "Ganges Delta",
-      },
-      {
-        name: "Gir National Park",
-        imageUrl: "https://images.unsplash.com/photo-1578326457399-3b34dbbf23b8?w=600&h=400&fit=crop",
-        location: "Gujarat",
-        formed: "1965",
-        notableFeatures: "Only natural habitat of Asiatic lions",
-        floraAndFauna: "Asiatic lion, leopard, sambar deer",
-        rivers: "Hiran River",
-      },
-      {
-        name: "Valley of Flowers National Park",
-        imageUrl: "https://images.unsplash.com/photo-1566141863735-7e40bd8a8ecd?w=600&h=400&fit=crop",
-        location: "Uttarakhand",
-        formed: "1982",
-        notableFeatures: "UNESCO World Heritage Site, alpine valley",
-        floraAndFauna: "Rare flowers, blue sheep, snow leopard",
-        rivers: "Pushpawati River",
       }
     ];
     
