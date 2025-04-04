@@ -2,9 +2,24 @@ import { Button } from "@/components/ui/button";
 import { useMatchup } from "@/hooks/useMatchup";
 import { Park } from "@shared/schema";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, RefreshCw, ArrowRight } from "lucide-react";
+import { MapPin, RefreshCw, ArrowRight, ImageIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+
+// Default fallback images for when external images fail to load
+const fallbackImages = [
+  "https://images.unsplash.com/photo-1544979590-37e9b47eb705?w=600&h=400&fit=crop", // Tiger
+  "https://images.unsplash.com/photo-1503656142023-618e7d1f435a?w=600&h=400&fit=crop", // Forest
+  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=400&fit=crop", // Nature
+  "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=600&h=400&fit=crop", // Mountains
+  "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=600&h=400&fit=crop", // Wildlife
+];
+
+// Get a deterministic fallback image based on park id
+const getFallbackImage = (id: number) => {
+  return fallbackImages[id % fallbackImages.length];
+};
 
 interface ParkCardProps {
   park: Park;
@@ -13,16 +28,36 @@ interface ParkCardProps {
 }
 
 const ParkCard = ({ park, isSubmitting, onVote }: ParkCardProps) => {
+  const [imageError, setImageError] = useState(false);
+  const [imageSrc, setImageSrc] = useState(park.imageUrl);
+  
+  const handleImageError = () => {
+    if (!imageError) {
+      // Only try fallback once to avoid infinite loops
+      setImageError(true);
+      setImageSrc(getFallbackImage(park.id));
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border-2 border-transparent hover:border-accent transition-all">
-      <div className="relative">
-        <img 
-          src={park.imageUrl} 
-          alt={park.name} 
-          className="w-full h-64 object-cover"
-        />
+      <div className="relative h-64 bg-neutral-200 flex items-center justify-center">
+        {imageError && imageSrc === getFallbackImage(park.id) ? (
+          // If even fallback fails, show icon
+          <div className="flex flex-col items-center justify-center text-neutral-400">
+            <ImageIcon className="h-16 w-16 mb-2" />
+            <span className="text-sm">Image unavailable</span>
+          </div>
+        ) : (
+          <img 
+            src={imageSrc} 
+            alt={park.name} 
+            className="w-full h-full object-cover"
+            onError={handleImageError}
+          />
+        )}
         <div className="absolute top-0 left-0 bg-primary/90 text-white text-sm font-medium px-3 py-1 m-2 rounded-full">
-          Rank #{park.rank || "?"}
+          ELO Rank
         </div>
         <div className="absolute top-0 right-0 bg-white/80 text-primary text-sm font-medium px-3 py-1 m-2 rounded-full">
           ELO: {park.elo}
