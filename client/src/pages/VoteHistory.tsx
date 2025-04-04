@@ -5,38 +5,16 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from "recha
 import { useRankings } from "@/hooks/useRankings";
 import { useVotes } from "@/hooks/useVotes";
 import { ImageIcon } from "lucide-react";
-import { useState, useCallback } from "react";
 import { Park } from "@shared/schema";
-
-// Default fallback images for when external images fail to load
-const fallbackImages = [
-  "https://images.unsplash.com/photo-1544979590-37e9b47eb705?w=600&h=400&fit=crop", // Tiger
-  "https://images.unsplash.com/photo-1503656142023-618e7d1f435a?w=600&h=400&fit=crop", // Forest
-  "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&h=400&fit=crop", // Nature
-  "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=600&h=400&fit=crop", // Mountains
-  "https://images.unsplash.com/photo-1472396961693-142e6e269027?w=600&h=400&fit=crop", // Wildlife
-];
-
-// Get a deterministic fallback image based on park id
-const getFallbackImage = (id: number) => {
-  return fallbackImages[id % fallbackImages.length];
-};
+import { useParkImage } from "@/hooks/useParkImage";
 
 // Separate component for handling park avatar images with error handling
 const ParkAvatar = ({ park }: { park: Park }) => {
-  const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(park.imageUrl);
-  
-  const handleImageError = useCallback(() => {
-    if (!imageError) {
-      setImageError(true);
-      setImageSrc(getFallbackImage(park.id));
-    }
-  }, [imageError, park.id]);
+  const { imageSrc, isError, handleImageError } = useParkImage(park.id, park.imageUrl);
   
   return (
     <>
-      {imageError && imageSrc === getFallbackImage(park.id) ? (
+      {isError ? (
         <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center mr-3">
           <ImageIcon className="w-6 h-6 text-neutral-400" />
         </div>
