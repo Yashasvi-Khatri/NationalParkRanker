@@ -4,7 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw, ImageIcon } from "lucide-react";
 import { queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useParkImage } from "@/hooks/useParkImage";
 
 // Default fallback images for when external images fail to load
 const fallbackImages = [
@@ -26,21 +26,24 @@ interface VoteItemProps {
 
 const VoteItem = ({ vote }: VoteItemProps) => {
   const isPositive = vote.winnerEloChange > 0;
-  const [imageError, setImageError] = useState(false);
-  const [imageSrc, setImageSrc] = useState(vote.winner.imageUrl);
-  
-  const handleImageError = () => {
-    if (!imageError) {
-      setImageError(true);
-      setImageSrc(getFallbackImage(vote.winner.id));
-    }
-  };
+  const { imageSrc, isError, handleImageError } = useParkImage(vote.winner.id, vote.winner.imageUrl);
   
   return (
     <div className="flex items-center border-b border-neutral-200 pb-4 last:border-b-0 last:pb-0">
       <div className="mr-4 w-16 h-16 rounded-full bg-neutral-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-        {imageError && imageSrc === getFallbackImage(vote.winner.id) ? (
-          <ImageIcon className="w-8 h-8 text-neutral-400" />
+        {isError ? (
+          imageSrc ? (
+            <img 
+              src={imageSrc} 
+              alt={vote.winner.name} 
+              className="w-full h-full object-cover"
+              onError={() => {
+                console.error(`Fallback image failed to load for vote winner ${vote.winner.id}`);
+              }}
+            />
+          ) : (
+            <ImageIcon className="w-8 h-8 text-neutral-400" />
+          )
         ) : (
           <img 
             src={imageSrc} 

@@ -15,9 +15,20 @@ const ParkAvatar = ({ park }: { park: Park }) => {
   return (
     <>
       {isError ? (
-        <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center mr-3">
-          <ImageIcon className="w-6 h-6 text-neutral-400" />
-        </div>
+        imageSrc ? (
+          <img 
+            src={imageSrc} 
+            alt={park.name} 
+            className="w-12 h-12 rounded-full object-cover mr-3"
+            onError={() => {
+              console.error(`Fallback image failed to load for park avatar ${park.id}`);
+            }}
+          />
+        ) : (
+          <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center mr-3">
+            <ImageIcon className="w-6 h-6 text-neutral-400" />
+          </div>
+        )
       ) : (
         <img 
           src={imageSrc} 

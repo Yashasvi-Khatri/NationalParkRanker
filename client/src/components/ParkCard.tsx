@@ -10,17 +10,12 @@ interface ParkCardProps {
 const ParkCard = ({ park }: ParkCardProps) => {
   const { imageSrc, isError, handleImageError } = useParkImage(park.id, park.imageUrl);
   
-  // Debugging log to help track image loading issues
-  useEffect(() => {
-    console.log(`ParkCard ${park.id}: Image source ${imageSrc}, isError: ${isError}`);
-  }, [park.id, imageSrc, isError]);
-  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-40 bg-neutral-200 flex items-center justify-center">
         {isError ? (
           // If we have a fallback image source, show it
-          imageSrc && !imageSrc.includes('wikipedia') && !imageSrc.includes('wikimedia') ? (
+          imageSrc ? (
             <img 
               src={imageSrc}
               alt={park.name}
