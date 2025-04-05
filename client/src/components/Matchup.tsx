@@ -5,6 +5,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, ArrowRight, ImageIcon } from "lucide-react";
 import { Loader2 } from "lucide-react";
 import { useParkImage } from "@/hooks/useParkImage";
+import { useEffect } from "react";
 
 interface ParkCardProps {
   park: Park;
@@ -15,15 +16,32 @@ interface ParkCardProps {
 const ParkCard = ({ park, isSubmitting, onVote }: ParkCardProps) => {
   const { imageSrc, isError, handleImageError } = useParkImage(park.id, park.imageUrl);
 
+  // Debugging log to help track image loading issues
+  useEffect(() => {
+    console.log(`Matchup Park ${park.id}: Image source ${imageSrc}, isError: ${isError}`);
+  }, [park.id, imageSrc, isError]);
+
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden border-2 border-transparent hover:border-accent transition-all">
       <div className="relative h-64 bg-neutral-200 flex items-center justify-center">
         {isError ? (
-          // If fallback fails, show icon
-          <div className="flex flex-col items-center justify-center text-neutral-400">
-            <ImageIcon className="h-16 w-16 mb-2" />
-            <span className="text-sm">Image unavailable</span>
-          </div>
+          // If we have a fallback image source, show it
+          imageSrc && !imageSrc.includes('wikipedia') && !imageSrc.includes('wikimedia') ? (
+            <img 
+              src={imageSrc}
+              alt={park.name}
+              className="w-full h-full object-cover"
+              onError={() => {
+                console.error(`Fallback image failed to load for park ${park.id}`);
+              }}
+            />
+          ) : (
+            // If fallback fails or doesn't exist, show icon
+            <div className="flex flex-col items-center justify-center text-neutral-400">
+              <ImageIcon className="h-16 w-16 mb-2" />
+              <span className="text-sm">Image unavailable</span>
+            </div>
+          )
         ) : (
           <img 
             src={imageSrc} 

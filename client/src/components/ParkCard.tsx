@@ -1,6 +1,7 @@
 import { Park } from "@shared/schema";
 import { MapPin, ChevronRight, ImageIcon } from "lucide-react";
 import { useParkImage } from "@/hooks/useParkImage";
+import { useEffect } from "react";
 
 interface ParkCardProps {
   park: Park & { rank: number };
@@ -9,16 +10,34 @@ interface ParkCardProps {
 const ParkCard = ({ park }: ParkCardProps) => {
   const { imageSrc, isError, handleImageError } = useParkImage(park.id, park.imageUrl);
   
+  // Debugging log to help track image loading issues
+  useEffect(() => {
+    console.log(`ParkCard ${park.id}: Image source ${imageSrc}, isError: ${isError}`);
+  }, [park.id, imageSrc, isError]);
+  
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-40 bg-neutral-200 flex items-center justify-center">
         {isError ? (
-          // If fallback fails, show icon
-          <div className="flex flex-col items-center justify-center text-neutral-400">
-            <ImageIcon className="h-10 w-10 mb-1" />
-            <span className="text-xs">Image unavailable</span>
-          </div>
+          // If we have a fallback image source, show it
+          imageSrc && !imageSrc.includes('wikipedia') && !imageSrc.includes('wikimedia') ? (
+            <img 
+              src={imageSrc}
+              alt={park.name}
+              className="w-full h-full object-cover"
+              onError={() => {
+                console.error(`Fallback image failed to load for park ${park.id}`);
+              }}
+            />
+          ) : (
+            // If fallback fails or doesn't exist, show icon
+            <div className="flex flex-col items-center justify-center text-neutral-400">
+              <ImageIcon className="h-10 w-10 mb-1" />
+              <span className="text-xs">Image unavailable</span>
+            </div>
+          )
         ) : (
+          // Original image with error handler
           <img 
             src={imageSrc}
             alt={park.name}
